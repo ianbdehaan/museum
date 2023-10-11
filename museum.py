@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np #test123
 pieces_number = 15
 class artwork:
     categories = {}
