@@ -2,7 +2,8 @@ import numpy as np
 pieces_number = 15
 class artwork:
     categories = {}
-    def __init__(name,category,artist):
+    def __init__(self, name,category,artist):
+        categories = {}
         self.name = name
         self.category = category
         self.artist = artist
@@ -11,9 +12,9 @@ class artwork:
         else:
             categories[self.category] = {self.name: (self.artist)}
             
-    def iscorrectguess(category,name,artist):
+    def isCorrectGuess(self, category,name,artist):
         try:
-            correct_guess = artork.categories[category][name]
+            correct_guess = artwork.categories[category][name]
         except:
             print("you are trying to access a non existing entry in the guess")
         if correct_guess == "AI" and artist == "AI":
@@ -25,7 +26,7 @@ class artwork:
         
         
 class player:
-    def __init__(name):
+    def __init__(self, name):
         self.name = name
         self.place = ""
     def guess(self, artname, isrealpainter):
