@@ -1,4 +1,4 @@
-import numpy as np #test123
+import numpy as np 
 pieces_number = 15
 class artwork:
     categories = {}
@@ -29,14 +29,31 @@ class player:
     def __init__(self, name):
         self.name = name
         self.place = ""
-    def guess(self, artname, isrealpainter):
+    def guess(self, category, artname, isrealpainter):
         #TODO implements a guess method that updates some sort of tracker
+        if category != self.place: 
+            #in this case we change rooms
+            closeDoors()
+            pass
+        else:
+            #in this case we check if there are more paintings left to be checked
+            openDoors()
+            pass
         pass
+    #do opendoors and closedoors
     def change_place(self, new_place):
-        #TODO implements a method that updated the place and saves the progress
+        #TODO implements a method that updated the place and saves the progress    
+        if 
+        #check if you can change place
+        #update db with new guesses 
+        # change place 
+
         pass
     def ends_expedition(self):
         #TODO implements a method that handles the end of the expedition
+        #can you finish the game-> yes/no 
+        #show statistics
+
         pass    
-
-
+        
+   
