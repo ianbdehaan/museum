@@ -1,12 +1,15 @@
-import sqlite3
+import sqlite3 as sql
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def connectDB():
-    conn = sqlite3.connect('test_database') 
+    conn = sql.connect('test_database') 
     c = conn.cursor()
     return c, conn
 
+
+#before game
 def createDB():
     c,conn = connectDB()
 
@@ -39,21 +42,10 @@ def createDB():
     c.close()
     conn.close()
 
-def insertStartofGame(name):
 
-    c,conn = connectDB()
-    c.execute(
-    '''
-    INSERT Into Players (name) VALUES
-        ('{}')
-    '''.format(name))
-
-    conn.commit()
-    c.close()
-    conn.close()
-
-def InitializeImages(name, artist, room, type):
-      
+#before game
+def InitializeImages(name: str, artist: str, room: str, type: str):
+    #add a way to give image ids to code 
     c,conn = connectDB()
     initImage = f'''
     Insert into Images (name, artist, room, type) Values
@@ -64,8 +56,33 @@ def InitializeImages(name, artist, room, type):
     c.close()
     conn.close()
 
-def updateDBperRoom(player, room, guesses: list[tuple]): 
 
+#begin game
+def insertStartofGame(name: str):
+    #maybe issue need to update guess as well...add pid
+    c,conn = connectDB()
+    try:
+        c.execute(
+        '''
+        INSERT Into Players (name) VALUES
+            ('{}')
+        '''.format(name))
+        
+        conn.commit()
+    except sql.IntegrityError:
+        print('This name is already in use')
+    except:
+        print('There is an issue')
+        
+    c.close()
+    conn.close()
+    
+    
+#after each room
+def updateDBperRoom(player: str, guesses: list[tuple]): 
+    #add integrity check
+    #only commit if all images from the db
+    #only if name in db
     c,conn = connectDB()
     pid = getPID(player)
     
@@ -81,7 +98,8 @@ def updateDBperRoom(player, room, guesses: list[tuple]):
     conn.close()
 
 
-def getPID(player):
+#help function
+def getPID(player: str):
     c, conn = connectDB()
     c.execute(
     '''SELECT pid FROM Players WHERE name = '{}' '''.format(player))
@@ -90,8 +108,10 @@ def getPID(player):
     conn.close()
     return pid[0]
     
- 
-def getScore(player):
+    
+#help function
+def getScore(player: str):
+    #only if player exists
     c, conn = connectDB()
     
     pid = getPID(player)
@@ -109,8 +129,11 @@ def getScore(player):
     c.close()
     conn.close()
     return score
-    
-def updateScore(player):
+
+
+#when player exits game    
+def updateScore(player: str):
+    #only if player exists
     pid = getPID(player)
     count = getScore(player)
     
@@ -120,10 +143,13 @@ def updateScore(player):
     WHERE pid = '{pid}'
     '''
     c.execute(score)
+    
     conn.commit()
     c.close()
     conn.close()
 
+
+#after game
 def viewHscore():
     c,conn = connectDB()
     c.execute('''
@@ -140,19 +166,84 @@ def viewHscore():
     conn.close()
 
 
-guesses = [(1,'AI'),(2,'AI'),(3,'AI'),(4,'AI'),(5,'AI'),(6,'AI')]
+#statistic 1
+def score_numPlayer_total():
+    c, conn = connectDB()
 
-viewHscore()
+    dict = {}
+
+    c.execute(
+        '''Select count(*) from images'''
+    )
+    max_score = c.fetchone()[0]+1
+    scores_range =  range(0, max_score)
+
+    for score in scores_range:
+        c.execute(
+            f'''SELECT count(name) 
+            FROM Players
+            WHERE score = {score}'''
+        )
+        num_players = c.fetchone()[0]
+        dict[score] = num_players
+        
+    c.close
+    conn.close
+    
+    data_score = list(dict.keys())
+    data_amount = list(dict.values())   
+    plt.bar(data_score, data_amount)   
+    plt.xlabel('Score')
+    plt.ylabel('Number of Players')
+    plt.title('Number of Players for Each Score')
+    plt.show()
+
+
+#statistic 2 (not sure if works for all rooms)
+def score_numPlayer_room(room: str):
+    c, conn = connectDB()
+    
+    dict = {}
+    
+    c.execute(
+        F'''Select count(*) 
+        FROM images
+        WHERE room = {room}
+        '''
+    )
+    
+    max_score = c.fetchone()[0]+1
+    scores_range =  range(0, max_score)
+    
+    for score in scores_range:
+        c.execute(
+            f'''SELECT count(DISTINCT(p.name)) 
+            FROM Players p, Images i
+            WHERE p.score = {score} and i.room = {room}'''
+        )
+        num_players = c.fetchone()[0]
+        dict[score] = num_players
+    c.close
+    conn.close
+    
+    data_score = list(dict.keys())
+    data_amount = list(dict.values())   
+    plt.bar(data_score, data_amount)   
+    plt.xlabel('Score')
+    plt.ylabel('Number of Players')
+    plt.title(f'Room {room}')
+    plt.show()
+    
+    
+    
+    
+# testing
+guesses = [(1,'REAL'),(2,'REAL'),(3,'REAL'),(4,'AI'),(5,'AI'),(6,'AI')]
+    
+
 c, conn = connectDB()
-
-
-
-c.execute(
-    '''
-    SELECT * from Highscore
-''')
-print(pd.DataFrame(c.fetchall()))
-c.close()
-conn.close()
-
-
+c.execute('''
+        SELECT * FROM images
+        ''')
+print(c.fetchall())
+#add statistic
