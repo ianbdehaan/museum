@@ -17,9 +17,9 @@ class Artwork:
         return (correct_guess == isAImade)
         
 class Player:
-    def __init__(self, name, place):
+    def __init__(self, name):
         self.name = name
-        self.place = place
+        self.place = ""
         self.guesses = {}
     def guess(self, category, artID, isRealPainter):
         #TODO implements a guess method that updates some sort of tracker
@@ -51,7 +51,7 @@ class Player:
         pass
     if __name__ == __main__:
         if sys.argv[1] == "-p":
-            player = Player(sys.argv[2], sys.argv[3])
+            player = Player(sys.argv[2])
         elif sys.argv[1] == "-g":
             player.guess(argv[2],argv[3],argv[4])
             
