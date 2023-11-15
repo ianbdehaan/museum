@@ -2,12 +2,7 @@ import sqlite3 as sql
 import pandas as pd
 import matplotlib.pyplot as plt
 
-'''
-Good practice as Class
-Good practice one opening?
-Good practice one Commit???
-test!!!
-'''
+
 
 class Database(object):
     
@@ -89,6 +84,7 @@ class Database(object):
             print('This name is already in use')
         except:
             print('There is an issue')    
+        #commit
 
     def retrieve_pid(self, player):
         pid_search = '''SELECT pid FROM Players WHERE name = '{}' '''.format(player)
@@ -96,6 +92,7 @@ class Database(object):
         pid = self.fetchone()
         return pid[0]
     
+    #convert list of tuples
     def update_DB(self, player, guesses):
         #room argument only needed to check integrity...if already done in db -> nor needed
         try: 
@@ -117,9 +114,6 @@ class Database(object):
         #commit?
         #self.commit()
     
-    '''
-    Define getScore and update score
-    '''
     def getScore(self, player):
         try: 
             pid = self.retrieve_pid(player)
@@ -158,7 +152,7 @@ class Database(object):
         self.execute(score)
     
     def score_numPlayer_total(self):
-        #maybe close connection
+        # close connection
         dict = {}
         count_images = '''Select count(*) from images'''
         self.execute(count_images)
@@ -186,7 +180,7 @@ class Database(object):
         plt.show()
     
     def score_numPlayer_room(self, room: str):
-        #maybe close connection first
+        # close connection first
         dict = {}
         count_per_room = F'''Select count(*) 
             FROM images
@@ -257,7 +251,8 @@ db.create_db()
 '''for (name, artist, room, type) in FakeDataImages:
     db.init_images(name,artist,room,type)
 db.commit() '''   
-
+db.__exit__()
+db.__init__()
 for (name, room, guess) in FakeDataUpdate:
     db.update_DB(name, guess)
 print(db.getScore('Peter'))
