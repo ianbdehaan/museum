@@ -28,18 +28,20 @@ class Player:
         if category != self.place: 
             #in this case we change rooms
             #closes the door in the game
-            action = f"closeDoors:{self.place}"
+            action = f"closeDoors\n{self.place}"
             #changes the current place to the new room
             self.place = category
             #create a new entry to store the guesses
             self.guesses[category] = {key: None for key in Artwork.categories[category].keys()}
             #registers the first guess
             self.guesses[category][artID] = Artwork.isCorrectGuess(category,artID,isRealPainter)
+            if action != "":
+                print(action)
         else:
             self.guesses[category][artID] = Artwork.isCorrectGuess(category,artID,isRealPainter)
             #we check if there are more paintings left to be checked
             if None not in self.guesses[category].values():
-                action = f"openDoors:{self.place}"
+                action = f"openDoors\n{self.place}"
                 self.updateDB()
                 print(action)
     def updateDB():
