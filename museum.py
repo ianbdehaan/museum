@@ -54,7 +54,7 @@ if __name__ == '__main__':
     if sys.argv[1] == "-p":
         player = Player(sys.argv[2])
     elif sys.argv[1] == "-g":
-        player.guess(sys.argv[2],sys.argv[3],sys.argv[4])
+        player.guess(sys.argv[2],sys.argv[3],bool(sys.argv[4]))
             
             
         
