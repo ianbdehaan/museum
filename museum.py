@@ -35,8 +35,7 @@ class Player:
             self.guesses[category] = {key: None for key in Artwork.categories[category].keys()}
             #registers the first guess
             self.guesses[category][artID] = Artwork.isCorrectGuess(category,artID,isRealPainter)
-            if action != "":
-                print(action)
+            print(action)
         else:
             self.guesses[category][artID] = Artwork.isCorrectGuess(category,artID,isRealPainter)
             #we check if there are more paintings left to be checked
