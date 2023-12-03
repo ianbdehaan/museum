@@ -1,4 +1,9 @@
 import sys
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 pieces_number = 15
 
 class Artwork:
@@ -57,24 +62,25 @@ class Player:
 #password: SDproject123456!
 #pass: gfsnhyjgslbmrrtw
 class Statistic:
-    smtp_port = 587                 # Standard secure SMTP port
-    smtp_server = "smtp.gmail.com"  # Google SMTP Server
+    def __init__(self, name):
+        self.smtp_port= 587# Standard secure SMTP port
+        self.smtp_server = "smtp.gmail.com" # Google SMTP Server
+        # Set up the email lists
+        self.email_from = "krolljesse0@gmail.com"
+        self.email_list = ["jessekroll2@gmail.com", "leonaltfeld@gmail.com", "ianbertholdhaan@gmail.com", "agata.cieliczko3@gmail.com"]# possible to add more emails
+        
+        self.pswd = "gfsnhyjgslbmrrtw" 
 
-    # Set up the email lists
-    email_from = "krolljesse0@gmail.com"
-    email_list = ["jessekroll2@gmail.com"]# possible to add more emails
-    
-    pswd = "gfsnhyjgslbmrrtw" 
+        self.subject = "Test-Score for GuessAI"
 
-    subject = "Score for GuessAI"
-
-    def send_emails(email_list, playername,filename):
+    def send_emails(self, email_list, playername,filename):
 
         for person in email_list:
 
             # Make the body of the email
             body = f"""
             Hey {playername},
+            test
             here are your score attached in a file. 
             You can open the file and see how well you performed.
             All the best, 
@@ -83,9 +89,9 @@ class Statistic:
 
             # make a MIME object to define parts of the email
             msg = MIMEMultipart()
-            msg['From'] = Statistic.email_from
+            msg['From'] = self.email_from
             msg['To'] = person
-            msg['Subject'] = Statistic.subject
+            msg['Subject'] = self.subject
 
             # Attach the body of the message
             msg.attach(MIMEText(body, 'plain'))
@@ -105,16 +111,16 @@ class Statistic:
 
             #Connect with the server
             #print("Connecting to server...")
-            TIE_server = smtplib.SMTP(Statistic.smtp_server, Statistic.smtp_port)
+            TIE_server = smtplib.SMTP(self.smtp_server, self.smtp_port)
             TIE_server.starttls()
-            TIE_server.login(Statistic.email_from, Statistic.pswd)
+            TIE_server.login(self.email_from, self.pswd)
             #print("Succesfully connected to server")
             
 
 
             # Send emails to "person" as list is iterated
             #print(f"Sending email to: {person}...")
-            TIE_server.sendmail(Statistic.email_from, person, text)
+            TIE_server.sendmail(self.email_from, person, text)
             #print(f"Email sent to: {person}")
             
 
@@ -122,9 +128,13 @@ class Statistic:
         TIE_server.quit()
 
 
-    # Run the function
-#Statistic.send_emails(Statistic.email_list, "Leon","C:/Users/49173/Downloads/Quiz3.pdf" )
+        # Run the function
+    def execute(self):
+        self.send_emails(self.email_list, "Champion",r"C:\Users\49173\Desktop\Sd correct git\museum\room_1_2.png")
 
+
+stat_instance = Statistic("Example")
+stat_instance.execute()
 
 if __name__ == '__main__':
     if sys.argv[1] == "-p":
