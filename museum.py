@@ -22,11 +22,11 @@ class Artwork:
         return (correct_guess == isAIMade)
         
 class Player:
-    def __init__(self, name):
+    def __init__(self, name, email):
         self.name = name
+        self.email = email
         self.place = ""
         self.guesses = {}
-        print(name)
     def guess(self, category, artID, isRealPainter):
         #TODO implements a guess method that updates some sort of tracker
         action = ""
@@ -133,11 +133,12 @@ class Statistic:
         self.send_emails(self.email_list, "Champion",r"C:\Users\49173\Desktop\Sd correct git\museum\room_1_2.png")
 
 
-stat_instance = Statistic("Example")
-stat_instance.execute()
+# stat_instance = Statistic("Example")
+# stat_instance.execute()
 
 if __name__ == '__main__':
     if sys.argv[1] == "-p":
-        player = Player(sys.argv[2])
+        player = Player(sys.argv[2],sys.argv[3])
+        sys.stdout.write(player.name + player.email)
     elif sys.argv[1] == "-g":
         player.guess(sys.argv[2],sys.argv[3],bool(sys.argv[4]))
