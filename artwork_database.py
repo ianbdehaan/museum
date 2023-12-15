@@ -40,7 +40,8 @@ class Database(object):
                         [type] STRING)
             '''
         self.execute(images)
-        
+
+    #room as string
     def create_table_guess(self):
         guess = '''
             CREATE TABLE IF NOT EXISTS Guess
@@ -92,7 +93,6 @@ class Database(object):
         pid = self.fetchone()
         return pid
     
-    #convert list of tuples
     def update_DB(self, player, guesses):
         
         '''Insert guesses from given Data for specific players'''
@@ -141,7 +141,6 @@ class Database(object):
             print("There is an issue")
             
         count = self.getScore(player)
-       #issue maybe 
         score = f'''UPDATE Players
         SET score = '{count}'
         WHERE pid = '{pid}'
@@ -150,8 +149,6 @@ class Database(object):
         self.commit()
     
     def score_numPlayer_total(self):
-        #make multiple plots(add pie chart) axis
-        # close connection
         dict = {}
         count_images = '''Select count(*) from images'''
         self.execute(count_images)
@@ -168,7 +165,6 @@ class Database(object):
             
             num_players = self.fetchone()
             dict[score] = num_players
-        #maybe close connection
             
         
         data_score = list(dict.keys())
@@ -177,7 +173,7 @@ class Database(object):
         plt.xlabel('Score')
         plt.ylabel('Number of Players')
         plt.title('Number of Players for Each Score')
-        plt.show()
+        plt.savefig('score_histogram_total.png')
     
     def score_numPlayer_room(self, room: str):
         # close connection first
@@ -194,7 +190,7 @@ class Database(object):
         for score in scores_range:
             distinct_playername = f'''SELECT count(DISTINCT(p.name)) 
                 FROM Players p, Images i
-                WHERE p.score = {score} and i.room = {room}'''
+                WHERE p.score = {score} and i.room = '{room}' '''
                 
             self.execute(distinct_playername)
             num_players = self.fetchone()
@@ -206,7 +202,7 @@ class Database(object):
         plt.xlabel('Score')
         plt.ylabel('Number of Players')
         plt.title(f'Room {room}')
-        plt.show()
+        plt.savefig(f'score_histogram_{room}.png')
       
     def pie_chart(self, player):
         total_players = '''Select count(*) from Players'''
@@ -237,10 +233,14 @@ class Database(object):
         ax.axis('equal')
         
         plt.tight_layout()
-        plt.show()
-
+        plt.savefig('pie_chart.png')
+    
     def double_plot():
+        
         return False
+    
+        
+        
     
     def __exit__(self): 
         self.c.close()
@@ -249,24 +249,25 @@ class Database(object):
     def commit(self):
         self.conn.commit()
 
-FakeDataUpdate = [
-('Jesse', '2', [(1,'AI'),(2,'AI'),(3,'AI'),(4,'AI'),(5,'AI'),(6,'AI'),(7,'REAL'),(8,'REAL')])
-]
+if __name__ == "__main__":
+    FakeDataUpdate = [
+    ('Jesse', '2', [(1,'AI'),(2,'AI'),(3,'AI'),(4,'AI'),(5,'AI'),(6,'AI'),(7,'REAL'),(8,'REAL')])
+    ]
 
-FakeDataImages = [('The laugh', 'Vincent', '1', 'AI'), 
-                ('Happy', 'Vincent', '1', 'AI'), 
-                ('The Thought', 'Vincent', '1', 'AI'),
-                ('Sad', 'Vincent', '1', 'AI'),
-                ('The', 'Josh', '1', 'Real'),
-                ('What', 'Josh', '1', 'Real'),
-                ('Two', 'Josh', '1', 'Real'),
-                ('Mina Liso', 'Leonardo', '1', 'Real'),
-                ('Sit', 'Michela', '2', 'Real'),
-                ('Stand', 'Michela', '2', 'Real'),
-                ('Walk', 'Michela', '2', 'Real'),
-                ('Talk', 'DALLI', '2', 'AI'),
-                ('Speak', 'DALLI', '2', 'AI'),
-                ('Scream', 'DALLI', '2', 'AI')] 
+    FakeDataImages = [('The laugh', 'Vincent', '1', 'AI'), 
+                    ('Happy', 'Vincent', '1', 'AI'), 
+                    ('The Thought', 'Vincent', '1', 'AI'),
+                    ('Sad', 'Vincent', '1', 'AI'),
+                    ('The', 'Josh', '1', 'Real'),
+                    ('What', 'Josh', '1', 'Real'),
+                    ('Two', 'Josh', '1', 'Real'),
+                    ('Mina Liso', 'Leonardo', '1', 'Real'),
+                    ('Sit', 'Michela', '2', 'Real'),
+                    ('Stand', 'Michela', '2', 'Real'),
+                    ('Walk', 'Michela', '2', 'Real'),
+                    ('Talk', 'DALLI', '2', 'AI'),
+                    ('Speak', 'DALLI', '2', 'AI'),
+                    ('Scream', 'DALLI', '2', 'AI')] 
 
 
 
