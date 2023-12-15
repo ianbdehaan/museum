@@ -16,7 +16,7 @@ class Database(object):
         return self.c.fetchall()
 
     def fetchone(self):
-        return self.c.fetchone()
+        return self.c.fetchone()[0]
 
     def execute(self, new_data):
         self.c.execute(new_data)
@@ -84,17 +84,19 @@ class Database(object):
             print('This name is already in use')
         except:
             print('There is an issue')    
-        #commit
+        self.commit()
 
     def retrieve_pid(self, player):
         pid_search = '''SELECT pid FROM Players WHERE name = '{}' '''.format(player)
         self.execute(pid_search)
         pid = self.fetchone()
-        return pid[0]
+        return pid
     
     #convert list of tuples
     def update_DB(self, player, guesses):
-        #room argument only needed to check integrity...if already done in db -> nor needed
+        
+        '''Insert guesses from given Data for specific players'''
+        
         try: 
             pid = self.retrieve_pid(player)
         except TypeError:
@@ -102,17 +104,12 @@ class Database(object):
         except: 
             print("There is an issue")
         
-
-        #insert can be done multiple times -> would this be an issue? No, only one try
-        #someway to use update
         for (iid,guess) in guesses:
             GuessesUpdate =  f'''
             INSERT INTO Guess (pid, iid, guess) values({pid},{iid},'{guess}')
             '''
             self.execute(GuessesUpdate)
-        
-        #commit?
-        #self.commit()
+        self.commit()
     
     def getScore(self, player):
         try: 
@@ -132,7 +129,7 @@ class Database(object):
         
         self.execute(Count)
         score = self.fetchone()
-        return score[0]
+        return score
     
     def updateScore(self, player: str):
     
@@ -144,20 +141,22 @@ class Database(object):
             print("There is an issue")
             
         count = self.getScore(player)
-        
+       #issue maybe 
         score = f'''UPDATE Players
         SET score = '{count}'
         WHERE pid = '{pid}'
         '''
         self.execute(score)
+        self.commit()
     
     def score_numPlayer_total(self):
+        #make multiple plots(add pie chart) axis
         # close connection
         dict = {}
         count_images = '''Select count(*) from images'''
         self.execute(count_images)
         
-        max_score = self.fetchone()[0]
+        max_score = self.fetchone()
         scores_range =  range(0, max_score+1)
 
         for score in scores_range:
@@ -167,8 +166,9 @@ class Database(object):
                 
             self.execute(count_players)
             
-            num_players = self.fetchone()[0]
+            num_players = self.fetchone()
             dict[score] = num_players
+        #maybe close connection
             
         
         data_score = list(dict.keys())
@@ -188,7 +188,7 @@ class Database(object):
             '''
         self.execute(count_per_room)
         
-        max_score = self.fetchone()[0]
+        max_score = self.fetchone()
         scores_range =  range(0, max_score + 1)
         
         for score in scores_range:
@@ -197,7 +197,7 @@ class Database(object):
                 WHERE p.score = {score} and i.room = {room}'''
                 
             self.execute(distinct_playername)
-            num_players = self.fetchone()[0]
+            num_players = self.fetchone()
             dict[score] = num_players
         
         data_score = list(dict.keys())
@@ -207,19 +207,41 @@ class Database(object):
         plt.ylabel('Number of Players')
         plt.title(f'Room {room}')
         plt.show()
-    
-    
-    def pie_chart():
-        labels = 'Frogs', 'Hogs', 'Dogs', 'Logs'
-        sizes = [15, 30, 45, 10]
+      
+    def pie_chart(self, player):
+        total_players = '''Select count(*) from Players'''
+        self.execute(total_players)
+        amt_players = self.fetchone()
+
+        score_player = f'''SELECT score 
+                FROM Players
+                WHERE name = '{player}' '''
+        self.execute(score_player)
+        score = self.fetchone()
+
+        count_players = f'''SELECT count(name) 
+                FROM Players
+                WHERE score >= {score}'''
+                
+        self.execute(count_players)  
+        num_players_with_greater_score = self.fetchone()
+        print(num_players_with_greater_score)
+            
+        labels = 'You are in the best: ','Rest'
+        sizes = [num_players_with_greater_score, amt_players-num_players_with_greater_score]
 
         fig, ax = plt.subplots()
-        ax.pie(sizes, labels=labels)
-        return None 
-    
-    def __enter__(self):
-        return self
+        explode = (0.1,0) 
+        ax.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+        startangle=90)
+        ax.axis('equal')
+        
+        plt.tight_layout()
+        plt.show()
 
+    def double_plot():
+        return False
+    
     def __exit__(self): 
         self.c.close()
         self.conn.close()
@@ -227,7 +249,9 @@ class Database(object):
     def commit(self):
         self.conn.commit()
 
-FakeDataUpdate = [('Peter', '1', [(1,'Real'),(2,'Real'),(3,'Real'),(4,'AI'),(5,'AI'),(6,'AI'),(7,'Real'),(8,'Real')])]
+FakeDataUpdate = [
+('Jesse', '2', [(1,'AI'),(2,'AI'),(3,'AI'),(4,'AI'),(5,'AI'),(6,'AI'),(7,'REAL'),(8,'REAL')])
+]
 
 FakeDataImages = [('The laugh', 'Vincent', '1', 'AI'), 
                 ('Happy', 'Vincent', '1', 'AI'), 
@@ -245,21 +269,10 @@ FakeDataImages = [('The laugh', 'Vincent', '1', 'AI'),
                 ('Scream', 'DALLI', '2', 'AI')] 
 
 
-db = Database()
-db.create_db()
 
-'''for (name, artist, room, type) in FakeDataImages:
-    db.init_images(name,artist,room,type)
-db.commit() '''   
-db.__exit__()
-db.__init__()
-for (name, room, guess) in FakeDataUpdate:
-    db.update_DB(name, guess)
-print(db.getScore('Peter'))
-db.updateScore('Peter')
-db.execute('''Select * from Players''')
 
-print(db.fetchall())
-db.score_numPlayer_room('1')
+
+
+
 
 
