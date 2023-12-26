@@ -16,7 +16,7 @@ class Database(object):
         return self.c.fetchall()
 
     def fetchone(self):
-        return self.c.fetchone()
+        return self.c.fetchone()[0]
 
     def execute(self, new_data):
         self.c.execute(new_data)
@@ -40,7 +40,8 @@ class Database(object):
                         [type] STRING)
             '''
         self.execute(images)
-        
+
+    #room as string
     def create_table_guess(self):
         guess = '''
             CREATE TABLE IF NOT EXISTS Guess
@@ -84,17 +85,18 @@ class Database(object):
             print('This name is already in use')
         except:
             print('There is an issue')    
-        #commit
+        self.commit()
 
     def retrieve_pid(self, player):
         pid_search = '''SELECT pid FROM Players WHERE name = '{}' '''.format(player)
         self.execute(pid_search)
         pid = self.fetchone()
-        return pid[0]
+        return pid
     
-    #convert list of tuples
     def update_DB(self, player, guesses):
-        #room argument only needed to check integrity...if already done in db -> nor needed
+        
+        '''Insert guesses from given Data for specific players'''
+        
         try: 
             pid = self.retrieve_pid(player)
         except TypeError:
@@ -102,17 +104,12 @@ class Database(object):
         except: 
             print("There is an issue")
         
-
-        #insert can be done multiple times -> would this be an issue? No, only one try
-        #someway to use update
         for (iid,guess) in guesses:
             GuessesUpdate =  f'''
             INSERT INTO Guess (pid, iid, guess) values({pid},{iid},'{guess}')
             '''
             self.execute(GuessesUpdate)
-        
-        #commit?
-        #self.commit()
+        self.commit()
     
     def getScore(self, player):
         try: 
@@ -121,18 +118,14 @@ class Database(object):
             print("This name does not exist. Please check again")
         except: 
             print("There is an issue")
-    
-        Count = f'''
-        SELECT Count(*)
-        FROM Guess
-        JOIN Images
-        ON Guess.iid = Images.iid
-        WHERE pid = '{pid}' and type = guess
-        '''
+
+        Count = f'''SELECT Count(*)
+                    FROM Guess
+                    WHERE pid = '{pid}' and guess = 'TRUE' '''
         
         self.execute(Count)
         score = self.fetchone()
-        return score[0]
+        return score
     
     def updateScore(self, player: str):
     
@@ -144,20 +137,19 @@ class Database(object):
             print("There is an issue")
             
         count = self.getScore(player)
-        
         score = f'''UPDATE Players
         SET score = '{count}'
         WHERE pid = '{pid}'
         '''
         self.execute(score)
+        self.commit()
     
     def score_numPlayer_total(self):
-        # close connection
         dict = {}
         count_images = '''Select count(*) from images'''
         self.execute(count_images)
         
-        max_score = self.fetchone()[0]
+        max_score = self.fetchone()
         scores_range =  range(0, max_score+1)
 
         for score in scores_range:
@@ -167,7 +159,7 @@ class Database(object):
                 
             self.execute(count_players)
             
-            num_players = self.fetchone()[0]
+            num_players = self.fetchone()
             dict[score] = num_players
             
         
@@ -177,7 +169,7 @@ class Database(object):
         plt.xlabel('Score')
         plt.ylabel('Number of Players')
         plt.title('Number of Players for Each Score')
-        plt.show()
+        plt.savefig('score_histogram_total.png')
     
     def score_numPlayer_room(self, room: str):
         # close connection first
@@ -188,16 +180,16 @@ class Database(object):
             '''
         self.execute(count_per_room)
         
-        max_score = self.fetchone()[0]
+        max_score = self.fetchone()
         scores_range =  range(0, max_score + 1)
         
         for score in scores_range:
             distinct_playername = f'''SELECT count(DISTINCT(p.name)) 
                 FROM Players p, Images i
-                WHERE p.score = {score} and i.room = {room}'''
+                WHERE p.score = {score} and i.room = '{room}' '''
                 
             self.execute(distinct_playername)
-            num_players = self.fetchone()[0]
+            num_players = self.fetchone()
             dict[score] = num_players
         
         data_score = list(dict.keys())
@@ -206,20 +198,46 @@ class Database(object):
         plt.xlabel('Score')
         plt.ylabel('Number of Players')
         plt.title(f'Room {room}')
-        plt.show()
-    
-    
-    def pie_chart():
-        labels = 'Frogs', 'Hogs', 'Dogs', 'Logs'
-        sizes = [15, 30, 45, 10]
+        plt.savefig(f'score_histogram_{room}.png')
+      
+    def pie_chart(self, player):
+        total_players = '''Select count(*) from Players'''
+        self.execute(total_players)
+        amt_players = self.fetchone()
+
+        score_player = f'''SELECT score 
+                FROM Players
+                WHERE name = '{player}' '''
+        self.execute(score_player)
+        score = self.fetchone()
+
+        count_players = f'''SELECT count(name) 
+                FROM Players
+                WHERE score >= {score}'''
+                
+        self.execute(count_players)  
+        num_players_with_greater_score = self.fetchone()
+        print(num_players_with_greater_score)
+            
+        labels = 'You are in the best: ','Rest'
+        sizes = [num_players_with_greater_score, amt_players-num_players_with_greater_score]
 
         fig, ax = plt.subplots()
-        ax.pie(sizes, labels=labels)
-        return None 
+        explode = (0.1,0) 
+        ax.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+        startangle=90)
+        ax.axis('equal')
+        
+        plt.tight_layout()
+        plt.savefig('pie_chart.png')
     
-    def __enter__(self):
-        return self
-
+    def double_plot():
+        
+        return False
+    
+        
+        
+    
     def __exit__(self): 
         self.c.close()
         self.conn.close()
@@ -227,39 +245,40 @@ class Database(object):
     def commit(self):
         self.conn.commit()
 
-FakeDataUpdate = [('Peter', '1', [(1,'Real'),(2,'Real'),(3,'Real'),(4,'AI'),(5,'AI'),(6,'AI'),(7,'Real'),(8,'Real')])]
+if __name__ == "__main__":
+    FakeDataUpdate = [
+    ('peter', '1', [(1,'TRUE'),(2,'FALSE'),(3,'TRUE'),(4,'TRUE'),(5,'FALSE'),(6,'TRUE'),(7,'FALSE'),(8,'FALSE')])
+    ]
 
-FakeDataImages = [('The laugh', 'Vincent', '1', 'AI'), 
-                ('Happy', 'Vincent', '1', 'AI'), 
-                ('The Thought', 'Vincent', '1', 'AI'),
-                ('Sad', 'Vincent', '1', 'AI'),
-                ('The', 'Josh', '1', 'Real'),
-                ('What', 'Josh', '1', 'Real'),
-                ('Two', 'Josh', '1', 'Real'),
-                ('Mina Liso', 'Leonardo', '1', 'Real'),
-                ('Sit', 'Michela', '2', 'Real'),
-                ('Stand', 'Michela', '2', 'Real'),
-                ('Walk', 'Michela', '2', 'Real'),
-                ('Talk', 'DALLI', '2', 'AI'),
-                ('Speak', 'DALLI', '2', 'AI'),
-                ('Scream', 'DALLI', '2', 'AI')] 
+    FakeDataImages = [('The laugh', 'Vincent', '1', 'AI'), 
+                    ('Happy', 'Vincent', '1', 'AI'), 
+                    ('The Thought', 'Vincent', '1', 'AI'),
+                    ('Sad', 'Vincent', '1', 'AI'),
+                    ('The', 'Josh', '1', 'Real'),
+                    ('What', 'Josh', '1', 'Real'),
+                    ('Two', 'Josh', '1', 'Real'),
+                    ('Mina Liso', 'Leonardo', '1', 'Real'),
+                    ('Sit', 'Michela', '2', 'Real'),
+                    ('Stand', 'Michela', '2', 'Real'),
+                    ('Walk', 'Michela', '2', 'Real'),
+                    ('Talk', 'DALLI', '2', 'AI'),
+                    ('Speak', 'DALLI', '2', 'AI'),
+                    ('Scream', 'DALLI', '2', 'AI')] 
+    db = Database()
+    
+    for (name, painter, room, ai) in FakeDataImages:
+        db.init_images(name, painter, room, ai)
+    
+
+    db.execute('''select * from guess''')
+    print(db.fetchall())
+    print(db.getScore('peter'))
+    
 
 
-db = Database()
-db.create_db()
 
-'''for (name, artist, room, type) in FakeDataImages:
-    db.init_images(name,artist,room,type)
-db.commit() '''   
-db.__exit__()
-db.__init__()
-for (name, room, guess) in FakeDataUpdate:
-    db.update_DB(name, guess)
-print(db.getScore('Peter'))
-db.updateScore('Peter')
-db.execute('''Select * from Players''')
 
-print(db.fetchall())
-db.score_numPlayer_room('1')
+
+
 
 
