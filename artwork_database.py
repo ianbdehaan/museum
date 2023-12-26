@@ -118,14 +118,10 @@ class Database(object):
             print("This name does not exist. Please check again")
         except: 
             print("There is an issue")
-    
-        Count = f'''
-        SELECT Count(*)
-        FROM Guess
-        JOIN Images
-        ON Guess.iid = Images.iid
-        WHERE pid = '{pid}' and type = guess
-        '''
+
+        Count = f'''SELECT Count(*)
+                    FROM Guess
+                    WHERE pid = '{pid}' and guess = 'TRUE' '''
         
         self.execute(Count)
         score = self.fetchone()
@@ -251,7 +247,7 @@ class Database(object):
 
 if __name__ == "__main__":
     FakeDataUpdate = [
-    ('Jesse', '2', [(1,'AI'),(2,'AI'),(3,'AI'),(4,'AI'),(5,'AI'),(6,'AI'),(7,'REAL'),(8,'REAL')])
+    ('peter', '1', [(1,'TRUE'),(2,'FALSE'),(3,'TRUE'),(4,'TRUE'),(5,'FALSE'),(6,'TRUE'),(7,'FALSE'),(8,'FALSE')])
     ]
 
     FakeDataImages = [('The laugh', 'Vincent', '1', 'AI'), 
@@ -268,7 +264,16 @@ if __name__ == "__main__":
                     ('Talk', 'DALLI', '2', 'AI'),
                     ('Speak', 'DALLI', '2', 'AI'),
                     ('Scream', 'DALLI', '2', 'AI')] 
+    db = Database()
+    
+    for (name, painter, room, ai) in FakeDataImages:
+        db.init_images(name, painter, room, ai)
+    
 
+    db.execute('''select * from guess''')
+    print(db.fetchall())
+    print(db.getScore('peter'))
+    
 
 
 
