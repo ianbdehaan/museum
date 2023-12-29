@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
+import os
 
 pieces_number = 15
 
@@ -169,6 +170,7 @@ if __name__ == '__main__':
         db = adb.Database()
         db.create_db()
         db.begin_game_name(player.name)
+        db.commit()
         db.__exit__()
         
     elif sys.argv[1] == "-g":
@@ -188,6 +190,7 @@ if __name__ == '__main__':
             if action == 'openDoors':
                 db = adb.Database()
                 db.update_DB(player.name, player.guesses[player.room].items())
+                db.commit()
                 db.__exit__()
                 
     elif sys.argv[1] == "-e":
@@ -195,6 +198,7 @@ if __name__ == '__main__':
         Artwork.from_file()
         db = adb.Database()
         db.updateScore(player.name)
+        db.commit()
         db.pie_chart(player.name)
         db.score_numPlayer_total()
         list_of_files = ['score_histogram_total.png', 'pie_chart.png']
@@ -202,5 +206,9 @@ if __name__ == '__main__':
             db.score_numPlayer_room(room)
             list_of_files.append(f'score_histogram_{room}.png')
         player.send_email(list_of_files)
-        #delete images
+        #delete files -> not sure if this works:
+        if os.path.exists("score_histogram_total.png"):
+            os.remove("score_histogram_total.png")
+        if os.path.exists("pie_chart.png"):
+            os.remove("pie_chart.png")
         db.__exit__()

@@ -1,5 +1,5 @@
 import sqlite3 as sql
-import pandas as pd
+
 import matplotlib.pyplot as plt
 
 
@@ -35,13 +35,11 @@ class Database(object):
             CREATE TABLE IF NOT EXISTS Images
                         ([iid] INTEGER not NULL PRIMARY KEY, 
                         [name] STRING,
-                        [artist] STRING,
                         [room] STRING,
                         [type] STRING)
             '''
         self.execute(images)
 
-    #room as string
     def create_table_guess(self):
         guess = '''
             CREATE TABLE IF NOT EXISTS Guess
@@ -52,16 +50,16 @@ class Database(object):
                         FOREIGN KEy (pid) REFERENCES Players ON DELETE CASCADE)
             '''
         self.execute(guess)
-        
+
     def create_db(self):
         self.create_table_players()
         self.create_table_images()
         self.create_table_guess()
 
-    def init_images(self, name: str, artist: str, room: str, type: str):
+    def init_images(self, name: str, room: str, type: str):
         initImage = f'''
-                    INSERT INTO Images (name, artist, room, type) VALUES
-                    ('{name}','{artist}','{room}','{type}')
+                    INSERT INTO Images (name, room, type) VALUES
+                    ('{name}','{room}','{type}')
                     '''  
         self.execute(initImage)
         
@@ -85,7 +83,7 @@ class Database(object):
             print('This name is already in use')
         except:
             print('There is an issue')    
-        self.commit()
+
 
     def retrieve_pid(self, player):
         pid_search = '''SELECT pid FROM Players WHERE name = '{}' '''.format(player)
@@ -109,7 +107,7 @@ class Database(object):
             INSERT INTO Guess (pid, iid, guess) values({pid},{iid},'{guess}')
             '''
             self.execute(GuessesUpdate)
-        self.commit()
+
     
     def getScore(self, player):
         try: 
@@ -142,7 +140,7 @@ class Database(object):
         WHERE pid = '{pid}'
         '''
         self.execute(score)
-        self.commit()
+
     
     def score_numPlayer_total(self):
         dict = {}
@@ -231,13 +229,6 @@ class Database(object):
         plt.tight_layout()
         plt.savefig('pie_chart.png')
     
-    def double_plot():
-        
-        return False
-    
-        
-        
-    
     def __exit__(self): 
         self.c.close()
         self.conn.close()
@@ -250,29 +241,54 @@ if __name__ == "__main__":
     ('peter', '1', [(1,'TRUE'),(2,'FALSE'),(3,'TRUE'),(4,'TRUE'),(5,'FALSE'),(6,'TRUE'),(7,'FALSE'),(8,'FALSE')])
     ]
 
-    FakeDataImages = [('The laugh', 'Vincent', '1', 'AI'), 
-                    ('Happy', 'Vincent', '1', 'AI'), 
-                    ('The Thought', 'Vincent', '1', 'AI'),
-                    ('Sad', 'Vincent', '1', 'AI'),
-                    ('The', 'Josh', '1', 'Real'),
-                    ('What', 'Josh', '1', 'Real'),
-                    ('Two', 'Josh', '1', 'Real'),
-                    ('Mina Liso', 'Leonardo', '1', 'Real'),
-                    ('Sit', 'Michela', '2', 'Real'),
-                    ('Stand', 'Michela', '2', 'Real'),
-                    ('Walk', 'Michela', '2', 'Real'),
-                    ('Talk', 'DALLI', '2', 'AI'),
-                    ('Speak', 'DALLI', '2', 'AI'),
-                    ('Scream', 'DALLI', '2', 'AI')] 
+    FakeDataImages = [('opart_2', 'Human', 'Op Art'),
+('Screenshot 2023-11-08 at 13_25_23','Human', 'Op Art'),
+('Screenshot 2023-11-08 at 13_25_41' ,'Human','Op Art'),
+('opartai5',	'AI',	'Op Art'),
+('opartai6',	'AI',	'Op Art'),
+('opart_3', 'Human',	'Op Art'),
+('opart_ai_3',	'AI',	'Op Art'),
+('opart_ai_2',	'AI',	'Op Art'),
+('WhatsApp Image 2023-11-07 at 12_36_37 (1)','Human',	'Cubism'),
+('WhatsApp Image 2023-10-11 at 10_16_18',	'AI',	'Cubism'),
+('WhatsApp Image 2023-10-11 at 10_18_52',	'Human',	'Cubism'),
+('WhatsApp Image 2023-11-07 at 12_36_37',	'AI',	'Cubism'),
+('f521d3e5759c43229966b7714a828449_ComfyUI_144983_',	'Human',	'Cubism'),
+('WhatsApp Image 2023-10-11 at 10_14_01',	'Human',	'Cubism'),
+('1b880a9d00344029bb285e90fb40709a_ComfyUI_143648__001',	'Human',	'Cubism'),
+('WhatsApp Image 2023-10-11 at 10_14_00',	'AI',	'Cubism'),
+('1861_jpg',	'AI',	'Cubism'),
+('sur_3',	'Human',	'Surrealism'),
+('sur_1',	'Human',	'Surrealism'),
+('WhatsApp Image 2023-11-08 at 10_18_07',	'Human',	'Surrealism'),
+('sur_2',	'Human',	'Surrealism'),
+('ai_sur_4',	'AI',	'Surrealism'),
+('ai_sur_3',	'AI',	'Surrealism'),
+('ai_sur_1',	'AI',	'Surrealism'),
+('sur_4',	'Human',	'Surrealism'),
+('popart_1',	'Human',	'Pop Art'),
+('popart_2',	'Human',	'Pop Art'),
+('popart_3',	'Human',	'Pop Art'),
+('popart_4',	'Human',	'Pop Art'),
+('popart_5',	'Human',	'Pop Art'),
+ ('popart_ai_1',	'AI',	'Pop Art'),
+('popart_ai_2',	'AI',	'Pop Art'),
+('popart_ai_3',	'AI',	'Pop Art'),
+('popart_ai_4',	'AI',	'Pop Art'),
+('1',	'Human',	'Minimalism'),
+('2', 'Human',	'Minimalism'),
+('min_ai_7',	'AI',	'Minimalism'),
+('min_ai_1',	'AI',	'Minimalism'),
+('min_ai_4',	'AI',	'Minimalism'),
+('3_001',	'Human',	'Minimalism'),
+('4',	'Human',	'Minimalism')]
+    
     db = Database()
     
-    for (name, painter, room, ai) in FakeDataImages:
-        db.init_images(name, painter, room, ai)
-    
 
-    db.execute('''select * from guess''')
+    db.execute('''select * from players''')
     print(db.fetchall())
-    print(db.getScore('peter'))
+    db.__exit__()
     
 
 
