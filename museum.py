@@ -171,6 +171,11 @@ if __name__ == '__main__':
         db.create_db()
         db.begin_game_name(player.name)
         db.commit()
+        artworks = db.give_images()
+        for artwork in artworks.split('\n'):
+            artID, room, isHumanMade = artwork.split()
+            Artwork(artID,room,isHumanMade)
+            Artwork.save_to_file()
         db.__exit__()
         
     elif sys.argv[1] == "-g":
