@@ -175,7 +175,7 @@ if __name__ == '__main__':
         for artwork in artworks.split('\n'):
             artID, room, isHumanMade = artwork.split()
             Artwork(artID,room,isHumanMade)
-            Artwork.save_to_file()
+        Artwork.save_to_file()
         db.__exit__()
         
     elif sys.argv[1] == "-g":
