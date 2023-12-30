@@ -1,8 +1,5 @@
 import sqlite3 as sql
-
 import matplotlib.pyplot as plt
-
-
 
 class Database(object):
     
@@ -82,7 +79,8 @@ class Database(object):
         except sql.IntegrityError:
             print('This name is already in use')
         except:
-            print('There is an issue')    
+            print('There is an issue')
+        #maybe use return statements    
 
 
     def retrieve_pid(self, player):
@@ -119,7 +117,7 @@ class Database(object):
 
         Count = f'''SELECT Count(*)
                     FROM Guess
-                    WHERE pid = '{pid}' and guess = 'TRUE' '''
+                    WHERE pid = '{pid}' and guess = 'True' '''
         
         self.execute(Count)
         score = self.fetchone()
@@ -285,10 +283,10 @@ if __name__ == "__main__":
 ('4',	'Human',	'Minimalism')]
     
     db = Database()
-    db.create_db()
+    '''  db.create_db()
     for (name, room, type) in FakeDataImages:
         db.init_images(name, room, type)
-    db.commit()
+    db.commit()'''
 
     #db.execute('''select * from images''')
     print(db.give_images())
