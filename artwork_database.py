@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 class Database(object):
     
-    DB_LOCATION = "testing_database"
+    DB_LOCATION = "database"
 
     def __init__(self):
         self.conn = sql.connect(Database.DB_LOCATION)
@@ -241,7 +241,8 @@ if __name__ == "__main__":
     ('peter', '1', [(1,'TRUE'),(2,'FALSE'),(3,'TRUE'),(4,'TRUE'),(5,'FALSE'),(6,'TRUE'),(7,'FALSE'),(8,'FALSE')])
     ]
 
-    FakeDataImages = [('opart_2', 'Human', 'Op Art'),
+
+    FakeDataImages = [('opart_ai_1',	'AI',	'Op Art'), ('opart_2', 'Human', 'Op Art'),
 ('Screenshot 2023-11-08 at 13_25_23','Human', 'Op Art'),
 ('Screenshot 2023-11-08 at 13_25_41' ,'Human','Op Art'),
 ('opartai5',	'AI',	'Op Art'),
@@ -284,11 +285,14 @@ if __name__ == "__main__":
 ('4',	'Human',	'Minimalism')]
     
     db = Database()
-    
+    db.create_db()
+    for (name, room, type) in FakeDataImages:
+        db.init_images(name, room, type)
+    db.commit()
 
-    db.execute('''select * from images''')
-    print(db.fetchall())
-    
+    #db.execute('''select * from images''')
+    print(db.give_images())
+    db.__exit__()
     
 
 
