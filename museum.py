@@ -174,8 +174,6 @@ if __name__ == '__main__':
         db.__exit__()
         
     elif sys.argv[1] == "-g":
-        Artwork("1331", "abstract", True)
-        Artwork.save_to_file()
         player = Player.from_file()
         Artwork.from_file()
         guess_result = player.guess(sys.argv[2],sys.argv[3],bool(sys.argv[4]))
@@ -190,25 +188,31 @@ if __name__ == '__main__':
             if action == 'openDoors':
                 db = adb.Database()
                 db.update_DB(player.name, player.guesses[player.room].items())
+                player.place = ""
+                player.save_to_file(player_info = True)
                 db.commit()
                 db.__exit__()
                 
     elif sys.argv[1] == "-e":
         player = Player.from_file()
-        Artwork.from_file()
-        db = adb.Database()
-        db.updateScore(player.name)
-        db.commit()
-        db.pie_chart(player.name)
-        db.score_numPlayer_total()
-        list_of_files = ['score_histogram_total.png', 'pie_chart.png']
-        for room in player.guesses.keys():
-            db.score_numPlayer_room(room)
-            list_of_files.append(f'score_histogram_{room}.png')
-        player.send_email(list_of_files)
-        #delete files -> not sure if this works:
-        if os.path.exists("score_histogram_total.png"):
-            os.remove("score_histogram_total.png")
-        if os.path.exists("pie_chart.png"):
-            os.remove("pie_chart.png")
-        db.__exit__()
+        if Player.room == "":
+            Artwork.from_file()
+            db = adb.Database()
+            db.updateScore(player.name)
+            db.commit()
+            db.pie_chart(player.name)
+            db.score_numPlayer_total()
+            list_of_files = ['score_histogram_total.png', 'pie_chart.png']
+            for room in player.guesses.keys():
+                db.score_numPlayer_room(room)
+                list_of_files.append(f'score_histogram_{room}.png')
+            player.send_email(list_of_files)
+            #delete files -> not sure if this works:
+            if os.path.exists("score_histogram_total.png"):
+                os.remove("score_histogram_total.png")
+            if os.path.exists("pie_chart.png"):
+                os.remove("pie_chart.png")
+            db.__exit__()
+            print("true")
+        else:
+            print("false")
