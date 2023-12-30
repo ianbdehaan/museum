@@ -1,29 +1,35 @@
 import sys
 import smtplib
+import artwork_database as adb
 from json import dump, load
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
+import os
+
 pieces_number = 15
 
 class Artwork:
     
     categories = {}
     
-    def __init__(self, artID,category,isAIMade):
+    def __init__(self, artID,category, humanOrAI):
+        isHumanMade = True if humanOrAI == "Human" else False
         if category in Artwork.categories:
-            Artwork.categories[category][artID] = isAIMade
+            Artwork.categories[category][artID] = isHumanMade
         else:
-            Artwork.categories[category] = {artID: (isAIMade)}
+            Artwork.categories[category] = {artID: (isHumanMade)}
             
     @classmethod
-    def isCorrectGuess(cls, category,artID, isAIMade):
+    def isCorrectGuess(cls, category,artID, isHumanMade):
         try:
             correct_guess = cls.categories[category][artID]
         except:
             print("you are trying to access a non existing entry in the guess")
-        return (correct_guess == isAIMade)
+        isCorrectGuess = (correct_guess == isHumanMade)
+        sys.stdout.write(str(isCorrectGuess) + " ")
+        return isCorrectGuess
     
     @classmethod
     def from_file(cls):
@@ -72,12 +78,7 @@ class Player:
             #we check if there are more paintings left to be checked
             if None not in self.guesses[category].values():
                 action = f"openDoors {category}"
-                self.updateDB()
         return action
-    
-    def updateDB():
-        #sends the current information in guesses in order to update the database
-        pass
     
     def save_to_file(self, player_info = False, guess_info = False):
         if player_info:
@@ -86,7 +87,7 @@ class Player:
             file.write(message)
             file.close()
         if guess_info:
-            dump(self.guesses, open("player_guesses.text","w"))
+            dump(self.guesses, open("player_guesses.txt","w"))
             
     def send_email(self, files : list):
         
@@ -165,25 +166,63 @@ class Player:
 
 if __name__ == '__main__':
     if sys.argv[1] == "-p":
+        if os.path.exists("player_guesses.txt"):
+            os.remove("player_guesses.txt")
         player = Player(sys.argv[2],sys.argv[3])
         player.save_to_file(player_info = True)
         
-    elif sys.argv[1] == "-g":
-        Artwork("1331", "abstract", True)
+        db = adb.Database()
+        db.create_db()
+        db.begin_game_name(player.name)
+        db.commit()
+        artworks = db.give_images()
+        print(artworks)
+        for artwork in artworks:
+            artID, humanOrAI, room = artwork
+            Artwork(artID,room,humanOrAI)
         Artwork.save_to_file()
+        db.__exit__()
+        
+    elif sys.argv[1] == "-g":
         player = Player.from_file()
         Artwork.from_file()
-        guess_result = player.guess(sys.argv[2],sys.argv[3],bool(sys.argv[4]))
+        guess_result = player.guess(sys.argv[2],sys.argv[3],eval(sys.argv[4]))
         player.save_to_file(guess_info = True)
-        print(guess_result)
         if guess_result != "":
             action, room = guess_result.split()
-            sys.stdout.write(guess_result)
+            sys.stdout.write(action)
             if action == "closeDoors":
                 player.room = room
                 player.save_to_file(player_info = True)
+            if action == 'openDoors':
+                db = adb.Database()
+                db.update_DB(player.name, player.guesses[player.place].items())
+                player.place = ""
+                player.save_to_file(player_info = True)
+                db.commit()
+                db.__exit__()
                 
     elif sys.argv[1] == "-e":
         player = Player.from_file()
-        Artwork.from_file()
-        player.send_email()
+        print(player.place)
+        if player.place == "":
+            Artwork.from_file()
+            db = adb.Database()
+            db.updateScore(player.name)
+            db.commit()
+            db.pie_chart(player.name)
+            db.score_numPlayer_total()
+            list_of_files = ['score_histogram_total.png', 'pie_chart.png']
+            for room in player.guesses.keys():
+                db.score_numPlayer_room(room)
+                list_of_files.append(f'score_histogram_{room}.png')
+            player.send_email(list_of_files)
+            #delete files -> not sure if this works:
+            if os.path.exists("score_histogram_total.png"):
+                os.remove("score_histogram_total.png")
+            if os.path.exists("pie_chart.png"):
+                os.remove("pie_chart.png")
+            db.__exit__()
+            print("true")
+        else:
+            print("false")
