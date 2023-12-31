@@ -1,5 +1,6 @@
 import sqlite3 as sql
 import matplotlib.pyplot as plt
+import os
 
 class Database(object):
     
@@ -166,28 +167,32 @@ class Database(object):
         plt.ylabel('Number of Players')
         plt.title('Number of Players for Each Score')
         plt.savefig('score_histogram_total.png')
+        plt.close()
     
+    
+    # score_numPlayer_room
     def score_numPlayer_room(self, room: str):
-        # close connection first
         dict = {}
         count_per_room = F'''Select count(*) 
             FROM images
-            WHERE room = {room}
+            WHERE room = '{room}'
             '''
         self.execute(count_per_room)
-        
         max_score = self.fetchone()
+        
         scores_range =  range(0, max_score + 1)
         
         for score in scores_range:
-            distinct_playername = f'''SELECT count(DISTINCT(p.name)) 
+            distinct_playername = f'''SELECT count(*) 
                 FROM Players p, Images i
                 WHERE p.score = {score} and i.room = '{room}' '''
                 
             self.execute(distinct_playername)
             num_players = self.fetchone()
+            print(num_players)
             dict[score] = num_players
-        
+            print(dict[score])
+            
         data_score = list(dict.keys())
         data_amount = list(dict.values())   
         plt.bar(data_score, data_amount)   
@@ -195,6 +200,7 @@ class Database(object):
         plt.ylabel('Number of Players')
         plt.title(f'Room {room}')
         plt.savefig(f'score_histogram_{room}.png')
+        plt.close()
       
     def pie_chart(self, player):
         total_players = '''Select count(*) from Players'''
@@ -226,6 +232,7 @@ class Database(object):
         
         plt.tight_layout()
         plt.savefig('pie_chart.png')
+        plt.close()
     
     def __exit__(self): 
         self.c.close()
@@ -240,14 +247,14 @@ if __name__ == "__main__":
     ]
 
 
-    FakeDataImages = [('opart_ai_1',	'AI',	'Op Art'), ('opart_2', 'Human', 'Op Art'),
-('Screenshot 2023-11-08 at 13_25_23','Human', 'Op Art'),
-('Screenshot 2023-11-08 at 13_25_41' ,'Human','Op Art'),
-('opartai5',	'AI',	'Op Art'),
-('opartai6',	'AI',	'Op Art'),
-('opart_3', 'Human',	'Op Art'),
-('opart_ai_3',	'AI',	'Op Art'),
-('opart_ai_2',	'AI',	'Op Art'),
+    FakeDataImages = [('opart_ai_1',	'AI',	'OpArt'), ('opart_2', 'Human', 'OpArt'),
+('Screenshot 2023-11-08 at 13_25_23','Human', 'OpArt'),
+('Screenshot 2023-11-08 at 13_25_41' ,'Human','OpArt'),
+('opartai5',	'AI',	'OpArt'),
+('opartai6',	'AI',	'OpArt'),
+('opart_3', 'Human',	'OpArt'),
+('opart_ai_3',	'AI',	'OpArt'),
+('opart_ai_2',	'AI',	'OpArt'),
 ('WhatsApp Image 2023-11-07 at 12_36_37 (1)','Human',	'Cubism'),
 ('WhatsApp Image 2023-10-11 at 10_16_18',	'AI',	'Cubism'),
 ('WhatsApp Image 2023-10-11 at 10_18_52',	'Human',	'Cubism'),
@@ -265,15 +272,15 @@ if __name__ == "__main__":
 ('ai_sur_3',	'AI',	'Surrealism'),
 ('ai_sur_1',	'AI',	'Surrealism'),
 ('sur_4',	'Human',	'Surrealism'),
-('popart_1',	'Human',	'Pop Art'),
-('popart_2',	'Human',	'Pop Art'),
-('popart_3',	'Human',	'Pop Art'),
-('popart_4',	'Human',	'Pop Art'),
-('popart_5',	'Human',	'Pop Art'),
- ('popart_ai_1',	'AI',	'Pop Art'),
-('popart_ai_2',	'AI',	'Pop Art'),
-('popart_ai_3',	'AI',	'Pop Art'),
-('popart_ai_4',	'AI',	'Pop Art'),
+('popart_1',	'Human',	'PopArt'),
+('popart_2',	'Human',	'PopArt'),
+('popart_3',	'Human',	'PopArt'),
+('popart_4',	'Human',	'PopArt'),
+('popart_5',	'Human',	'PopArt'),
+ ('popart_ai_1',	'AI',	'PopArt'),
+('popart_ai_2',	'AI',	'PopArt'),
+('popart_ai_3',	'AI',	'PopArt'),
+('popart_ai_4',	'AI',	'PopArt'),
 ('1',	'Human',	'Minimalism'),
 ('2', 'Human',	'Minimalism'),
 ('min_ai_7',	'AI',	'Minimalism'),
@@ -283,14 +290,14 @@ if __name__ == "__main__":
 ('4',	'Human',	'Minimalism')]
     
     db = Database()
-    '''  db.create_db()
+    '''db.create_db()
     for (name, room, type) in FakeDataImages:
         db.init_images(name, room, type)
     db.commit()'''
 
-    #db.execute('''select * from images''')
     print(db.give_images())
     db.__exit__()
+    
     
 
 
